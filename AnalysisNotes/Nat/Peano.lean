@@ -1,5 +1,13 @@
--- Peano's natural numbers definition.
--- ⚠️ This shadowing of ℕ is intentional. This is our custom Peano ℕ.
+/-
+Peano Naturals
+==============
+
+This file redefines natural numbers using Peano's axioms for didactic clarity.
+It introduces natural number construction, basic notations, and key theorems
+about their behavior.
+-/
+
+-- Definition of natural numbers.
 inductive ℕ where
   | zero : ℕ
   | succ : ℕ → ℕ
@@ -8,32 +16,50 @@ inductive ℕ where
 
 namespace ℕ
 
+-- Notation & Conveniences
+-- =======================
+
+-- Define `x⁺` as shorthand for `succ x` to improve clarity in later theorems.
+notation x "⁺" => succ x
+
+-- This instance allows `0` to be used as notation for `zero`.
 instance : Zero ℕ where
   zero := ℕ.zero
 
+-- This instance allows to use 1 as instead of `succ zero` or even `0⁺`.
 instance : One ℕ where
   one := succ zero
 
+-- Basic checks.
 #check (0 : ℕ)
 #check (1 : ℕ)
-
-notation x "⁺" => succ x
 #eval 1 == 0⁺
 
+
+-- Simplification Support for ` simp` Tools
+-- ========================================
+
+-- Lean's simplification tools (`simp`) require theorems (not just definitions)
+-- to perform rewrites. The following theorems enable automated rewriting of
+-- common expressions.
+
+-- Allows `simp` to recognise the equivalence of `1` and `succ zero`.
 @[simp]
 theorem one_eq_succ_zero : 1 = 0⁺ := rfl
 
--- Prove successor is an injective function.
-section
--- Successor is an injective (modus ponens)
-theorem succ_inj_mp (a b : ℕ) : a⁺ = b⁺ → a = b
+-- Successor Injectitivy
+-- =====================
+
+-- The injectivity of the successor function can be shown in two directions.
+-- Forward direction (modus ponens): if `a⁺ = b⁺` then `a = b`.
+example (a b : ℕ) : a⁺ = b⁺ → a = b
   | Eq.refl _ => rfl
 
--- Successor is an injective (modus ponens reverse)
-theorem succ_inj_mpr (a b : ℕ) : a = b → a⁺ = b⁺ :=
+-- Backward direction (modus ponens reverse): if `a = b` then `a⁺ = b⁺`.
+example (a b : ℕ) : a = b → a⁺ = b⁺ :=
   λ h => by rw [h]
-end
 
+-- In Lean, both directions can be combined into a bi-implication using `↔`.
 @[simp]
 theorem succ_inj (a b : ℕ) : a⁺ = b⁺ ↔ a = b :=
   Iff.intro
@@ -41,5 +67,20 @@ theorem succ_inj (a b : ℕ) : a⁺ = b⁺ ↔ a = b :=
       match h with
       | Eq.refl _ => rfl)
     (λ h => by rw [h])
+
+-- Usage Examples of Successor Injectivity
+-- =======================================
+section
+  variable (a b : ℕ)
+  variable (h₁ : a⁺ = b⁺) (h₂ : a = b)
+
+  -- Both forms are equivalent. The first is looks easier in tactic mode.
+  #check Iff.mp  (succ_inj a b) h₁
+  #check Iff.mpr (succ_inj a b) h₂
+
+  -- This form seems more concise for coding in general.
+  #check (succ_inj a b).mp  h₁
+  #check (succ_inj a b).mpr h₂
+end
 
 end ℕ
