@@ -1,13 +1,13 @@
 /-
-Peano Naturals
-==============
+  Peano's Natural Numbers
+  =======================
 
-This file redefines natural numbers using Peano's axioms for didactic clarity.
-It introduces natural number construction, basic notations, and key theorems
-about their behavior.
+  This file redefines natural numbers using Peano's axioms for didactic clarity.
+  It introduces natural number construction, basic notations, and key theorems
+  about their behavior.
 -/
 
--- Definition of natural numbers.
+-- Peano's axioms (definition of natural numbers).
 inductive ℕ where
   | zero : ℕ
   | succ : ℕ → ℕ
@@ -63,10 +63,10 @@ example (a b : ℕ) : a = b → a⁺ = b⁺ :=
 @[simp]
 theorem succ_inj (a b : ℕ) : a⁺ = b⁺ ↔ a = b :=
   Iff.intro
-    (λ h =>
-      match h with
+    (λ hypotesis =>
+      match hypotesis with
       | Eq.refl _ => rfl)
-    (λ h => by rw [h])
+    (λ hypotesis => by rw [hypotesis])
 
 -- Usage Examples of Successor Injectivity
 -- =======================================
