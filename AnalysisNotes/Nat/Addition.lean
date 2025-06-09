@@ -38,14 +38,14 @@ instance : Add ℕ where
 -- Allows `simp` to recognize `1 + n` as equivalent to `n⁺`, which is convenient
 -- in proofs involving inequalities or successor expressions.
 @[simp]
-theorem one_add_eq_succ : ∀ (n : ℕ), 1 + n = n⁺
-  | _ => by rw [one_eq_succ_zero, succ_add, zero_add]
+theorem one_add_eq_succ (n : ℕ) : 1 + n = n⁺
+  := by rw [one_eq_succ_zero, succ_add, zero_add]
 
 
 -- Addition Commutativity
 -- ======================
 
--- The addition of natural numbers is commutative means `a + b = b + a`.
+-- Addition of natural numbers is commutative: `a + b = b + a`.
 -- The proof procceds in three steps by nested induction on both arguments,
 -- using lemmas we construct along the way.
 
@@ -77,8 +77,9 @@ theorem add_comm (m: ℕ) : ∀ (n : ℕ), m + n = n + m
 -- Addition Associativity
 -- ======================
 
--- The associative property means multiple addition operations like `a + b + c`
--- can be executed in any order, `(a + b) + c = a + (b + c)`.
+-- The associative property allows addition to be regrouped:
+-- `(a + b) + c = a + (b + c)`.
+
 @[simp]
 theorem add_assoc (a b : ℕ) : ∀ (c : ℕ), (a + b) + c = a + (b + c)
   | 0 => by repeat rw [add_zero]
