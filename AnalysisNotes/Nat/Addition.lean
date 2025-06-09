@@ -1,7 +1,10 @@
 /-
   Addition of Natural Numbers
+  ===========================
 
-  This file...
+  This file defines the addition operation for the natural numbers introduced in
+  `Peano.lean`. It includes the core definition, basic notation, key theorems,
+  and simplification lemmas for automated reasoning.
 -/
 
 import AnalysisNotes.Nat.Peano
@@ -24,6 +27,7 @@ instance : Add ℕ where
 -- Basic check.
 #eval 0⁺⁺ + 0⁺   -- ℕ.succ (ℕ.succ (ℕ.succ (ℕ.zero)))
 
+
 -- Simplification Support for `simp` Tools
 -- =======================================
 
@@ -31,8 +35,8 @@ instance : Add ℕ where
 @[simp] theorem zero_add (n : ℕ) : 0 + n = n := rfl
 @[simp] theorem succ_add (m n : ℕ) : m⁺ + n = (m + n)⁺ := rfl
 
--- Allows `simp` to recognise `1+n` as equivalent to `n⁺`, convenient when
--- working with proves involving inequalities.
+-- Allows `simp` to recognize `1 + n` as equivalent to `n⁺`, which is convenient
+-- in proofs involving inequalities or successor expressions.
 @[simp]
 theorem one_add_eq_succ : ∀ (n : ℕ), 1 + n = n⁺
   | _ => by rw [one_eq_succ_zero, succ_add, zero_add]
@@ -41,23 +45,24 @@ theorem one_add_eq_succ : ∀ (n : ℕ), 1 + n = n⁺
 -- Proving Addition of Naturals is Commutative
 -- ===========================================
 
--- The addition of natural numbers be commuteative means `a + b = b + a`.
--- The prove of that property is done in three steps.
+-- The addition of natural numbers is commutative means `a + b = b + a`.
+-- The proof procceds in three steps by nested induction on both arguments,
+-- using lemmas we construct along the way.
 
 -- First: we show the addition with zero is commutative.
 @[simp]
 theorem add_zero : ∀ (n : ℕ), n + 0 = n
   | 0  => rfl
   | m⁺ => by
-    have ih := add_zero m  -- inductive_hypotesis
+    have ih := add_zero m  -- inductive hypothesis
     rw [succ_add, ih]
 
--- Second: we show that addition with the sucessor is commutative.
+-- Second: we show that addition with the successor is commutative.
 @[simp]
 theorem add_succ (n : ℕ) : ∀ (m : ℕ), m + n⁺ = (m + n)⁺
   | 0  => by repeat rw [zero_add]
   | k⁺ => by
-    have ih := add_succ n k  -- inductive hypotesis
+    have ih := add_succ n k  -- inductive hypothesis
     rw [succ_add, succ_add, ih]
 
 -- Finally: we use the two lemmas above to prove that addition is commutative.
@@ -65,7 +70,7 @@ theorem add_succ (n : ℕ) : ∀ (m : ℕ), m + n⁺ = (m + n)⁺
 theorem add_comm (m: ℕ) : ∀ (n : ℕ), m + n = n + m
   | 0  => by rw [add_zero, zero_add]
   | k⁺ => by
-    have ih := add_comm m k  -- inductive hypotesis
+    have ih := add_comm m k  -- inductive hypothesis
     rw [add_succ, succ_add, ih]
 
 
@@ -78,18 +83,18 @@ theorem add_comm (m: ℕ) : ∀ (n : ℕ), m + n = n + m
 theorem add_assoc (a b : ℕ) : ∀ (c : ℕ), (a + b) + c = a + (b + c)
   | 0 => by repeat rw [add_zero]
   | k⁺ => by
-    have ih := add_assoc a b k  -- inductive hypotesis
+    have ih := add_assoc a b k  -- inductive hypothesis
     rw [add_succ, ih, ← add_succ, ← add_succ]
 
 
 -- Proving Addition Cancellation
 -- =============================
 
--- Allows to reduces equalities by eliminating elements present in both sides of
--- an equation.
+-- Enables simplification of equalities by eliminating common terms on both
+-- sides of the equation.
 --
--- In equalities involve addition, the common term can be wither on the left or
--- on the right side of the addition operator. We handle both cases separately.
+-- In equalities involving addition, the common term can appear either on the
+-- left or right side of the `+` operator.
 
 -- Cancellation where the common term is on the left of the addition.
 @[simp]
@@ -99,7 +104,7 @@ theorem add_cancel_left (a b c : ℕ) (h : a + b = a + c) : b = c :=
     simp at h
     exact h
   | k⁺ => by
-    have ih := add_cancel_left k b c  -- inductive hypotesis
+    have ih := add_cancel_left k b c  -- inductive hypothesis
     rw [succ_add, succ_add] at h
     apply ih
     apply Iff.mp (succ_inj (k+b) (k+c))
