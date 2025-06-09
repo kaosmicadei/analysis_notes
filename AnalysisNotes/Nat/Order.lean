@@ -3,17 +3,14 @@ import AnalysisNotes.Nat.Addition
 import AnalysisNotes.Nat.Multiplication
 
 
+-- Partial Order
+-- =============
+
 namespace ℕ
 
-def le (m n : ℕ) : Prop := ∃k, m + k = n
+def le (m n : ℕ) : Prop := ∃ k, m + k = n
 
 notation m " ≤ " n => le m n
-
-@[simp]
-theorem le_refl (n : ℕ) : n ≤ n := by
-  unfold le
-  apply Exists.intro 0
-  rw [add_zero]
 
 @[simp]
 theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
@@ -23,10 +20,39 @@ theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
   rw [zero_add]
 
 @[simp]
+theorem le_refl (n : ℕ) : n ≤ n := by
+  unfold le
+  apply Exists.intro 0
+  rw [add_zero]
+
+@[simp]
+theorem le_trans (a b c : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
+  unfold le at h₁ h₂
+  obtain ⟨k₁, hk₁⟩ := h₁
+  obtain ⟨k₂, hk₂⟩ := h₂
+  rw [← hk₁] at hk₂
+  unfold le
+  apply Exists.intro (k₁ + k₂)
+  rw [← add_assoc]
+  exact hk₂
+
+theorem le_antisymm (a b : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
+  obtain ⟨k₁, hk₁⟩ := h₁
+  obtain ⟨k₂, hk₂⟩ := h₂
+  rw [← hk₁] at hk₂
+  have h : k₁ + k₂ = 0 := by
+    apply add_cancel_left a
+    rw [← add_assoc, add_zero]
+    exact hk₂
+  have k_zero : k₁ = 0 := And.left (add_eq_zero k₁ k₂ h)
+  rw [k_zero, add_zero] at hk₁
+  exact hk₁
+
+@[simp]
 theorem le_self_succ (n : ℕ) : n ≤ n⁺ := by
   unfold le
   apply Exists.intro 1
-  rw [add_one_eq_succ]
+  rw [add_comm, one_add_eq_succ]
 
 @[simp]
 theorem le_succ (m n : ℕ) (h : m ≤ n) : m ≤ n⁺ := by
@@ -45,18 +71,6 @@ theorem succ_le_succ (m n : ℕ) (h : m ≤ n) : m⁺ ≤ n⁺ := by
   rw [succ_add, hk]
 
 @[simp]
-theorem le_trans (a b c : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
-  unfold le at h₁ h₂
-  obtain ⟨k₁, hk₁⟩ := h₁
-  obtain ⟨k₂, hk₂⟩ := h₂
-  rw [← hk₁] at hk₂
-  unfold le
-  apply Exists.intro (k₁ + k₂)
-  rw [← add_assoc]
-  exact hk₂
-
-
-@[simp]
 theorem add_le_add (a b c : ℕ) (h : a ≤ b) : (a + c) ≤ (b + c) :=
   match c with
   | 0 => by
@@ -66,6 +80,8 @@ theorem add_le_add (a b c : ℕ) (h : a ≤ b) : (a + c) ≤ (b + c) :=
     repeat rw [add_succ]
     apply succ_le_succ
     exact add_le_add a b k h
+
+
 
 theorem mul_le_mul (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c) :=
   match c with
@@ -97,5 +113,34 @@ theorem le_mul_left (a b c : ℕ) (h : a ≤ b) : (c * a) ≤ (c * b)
   := by
   rw [mul_comm, mul_comm c]
   exact mul_le_mul a b c h
+
+end ℕ
+
+
+-- Strict Partial Order
+-- ====================
+
+namespace ℕ
+
+def lt (m n : ℕ) : Prop := ∃ k, m + k⁺ = n
+
+notation m " < " n => lt m n
+
+theorem lt_irrefl (a : ℕ) : (a < a) → False
+  := λ ⟨k, hk⟩ => by
+  have h : k⁺ = 0 := by
+    apply add_cancel_left a
+    rw [add_zero]
+    exact hk
+  nomatch h
+
+theorem lt_trans (a b c : ℕ) (h₁ : a < b) (h₂ : b < c) : a < c := by
+  obtain ⟨k₁, hk₁⟩ := h₁
+  obtain ⟨k₂, hk₂⟩ := h₂
+  rw [← hk₁] at hk₂
+  unfold lt
+  apply Exists.intro (k₁ + k₂⁺)
+  rw [← succ_add, ← add_assoc]
+  exact hk₂
 
 end ℕ
