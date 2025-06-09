@@ -117,4 +117,8 @@ theorem add_cancel_right (a b c : ℕ) (h : a + c = b + c) : a = b := by
   rw [add_comm a c, add_comm b c] at h
   apply add_cancel_left c a b h
 
+@[simp]
+theorem add_eq_zero : ∀ (a b : ℕ), a + b = 0 → a = 0 ∧ b = 0
+  | 0, 0, rfl => And.intro rfl rfl
+
 end ℕ
