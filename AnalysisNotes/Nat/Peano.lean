@@ -47,6 +47,18 @@ instance : One ℕ where
 @[simp]
 theorem one_eq_succ_zero : 1 = 0⁺ := rfl
 
+-- Zero is not a Sucessor
+-- ===============================
+
+-- A core idea on Peano's construction is that natural numbers have a base
+-- element (zero) which is not the successor of any number. Here we prove it by
+-- showing that constructing an equality `0 = n⁺` fails structurally.
+
+@[simp]
+theorem zero_not_succ (n : ℕ) : 0 = n⁺ → False :=
+  λ h => nomatch h
+
+
 -- Successor Injectitivy
 -- =====================
 
