@@ -80,13 +80,15 @@ theorem succ_inj (a b : ℕ) : a⁺ = b⁺ ↔ a = b :=
       | Eq.refl _ => rfl)
     (λ hypotesis => by rw [hypotesis])
 
+
 -- Usage Examples of Successor Injectivity
 -- =======================================
+
 section
   variable (a b : ℕ)
   variable (h₁ : a⁺ = b⁺) (h₂ : a = b)
 
-  -- Both forms are equivalent. The first is looks easier in tactic mode.
+  -- Both forms are equivalent. The first looks easier in tactic mode.
   #check Iff.mp  (succ_inj a b) h₁
   #check Iff.mpr (succ_inj a b) h₂
 
