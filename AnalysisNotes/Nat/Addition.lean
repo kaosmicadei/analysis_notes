@@ -42,8 +42,8 @@ theorem one_add_eq_succ : ∀ (n : ℕ), 1 + n = n⁺
   | _ => by rw [one_eq_succ_zero, succ_add, zero_add]
 
 
--- Proving Addition of Naturals is Commutative
--- ===========================================
+-- Addition Commutativity
+-- ======================
 
 -- The addition of natural numbers is commutative means `a + b = b + a`.
 -- The proof procceds in three steps by nested induction on both arguments,
@@ -74,8 +74,8 @@ theorem add_comm (m: ℕ) : ∀ (n : ℕ), m + n = n + m
     rw [add_succ, succ_add, ih]
 
 
--- Proving Addition of Naturals is Associative
--- ===========================================
+-- Addition Associativity
+-- ======================
 
 -- The associative property means multiple addition operations like `a + b + c`
 -- can be executed in any order, `(a + b) + c = a + (b + c)`.
@@ -87,8 +87,8 @@ theorem add_assoc (a b : ℕ) : ∀ (c : ℕ), (a + b) + c = a + (b + c)
     rw [add_succ, ih, ← add_succ, ← add_succ]
 
 
--- Proving Addition Cancellation
--- =============================
+-- Addition Cancellation
+-- =====================
 
 -- Enables simplification of equalities by eliminating common terms on both
 -- sides of the equation.
