@@ -32,11 +32,10 @@ notation x " ∼ " y => eq x y
 @[simp] theorem eq_symm (x y : ℤ) (h : x ∼ y) : y ∼ x := by simp at *; rw [h]
 @[simp] theorem eq_trans (x y z : ℤ) (h₁ : x ∼ y) (h₂ : y ∼ z) : x ∼ z := by
   simp at *
-  have h : x.a + y.b + z.b = y.a + x.b + z.b := by rw [h₁]
-  rw [ℕ.add_assoc y.a, ℕ.add_comm x.b, ← ℕ.add_assoc, h₂] at h
-  rw [ℕ.add_comm x.a, ℕ.add_comm z.a, ℕ.add_assoc y.b, ℕ.add_assoc y.b] at h
-  apply ℕ.add_cancel_left y.b
-  exact h
+  apply ℕ.add_cancel_left y.a
+  rw [← ℕ.add_assoc, ← ℕ.add_assoc, ℕ.add_comm y.a, ℕ.add_comm y.a z.a]
+  rw [ℕ.add_assoc, h₂, ← ℕ.add_assoc]
+  rw [ℕ.add_comm x.a, ℕ.add_assoc, h₁, ℕ.add_assoc]
 
 @[simp] def add : ℤ → ℤ → ℤ := λ ⟨a, b⟩ ⟨c, d⟩ => ⟨a + c, b + d⟩
 
@@ -55,6 +54,6 @@ theorem add_inv (x : ℤ) : (x + ⁻x) ∼ 0 := by simp
 instance : Sub ℤ where
   sub := sub
 
-#eval (1 : ℤ) - 1 
+#eval (1 : ℤ) - 1
 
 end ℤ
