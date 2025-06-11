@@ -7,7 +7,7 @@
   and simplification lemmas for automated reasoning.
 -/
 
-import AnalysisNotes.Nat.Peano
+import AnalysisNotes.Natural.Peano
 
 
 namespace ℕ
@@ -108,8 +108,7 @@ theorem add_cancel_left (a b c : ℕ) (h : a + b = a + c) : b = c :=
     have ih := add_cancel_left k b c  -- inductive hypothesis
     rw [succ_add, succ_add] at h
     apply ih
-    apply Iff.mp (succ_inj (k+b) (k+c))
-    exact h
+    exact succ_inj.mp h
 
 -- Cancellation where the common term is on the right of the addition.
 @[simp]
@@ -117,8 +116,33 @@ theorem add_cancel_right (a b c : ℕ) (h : a + c = b + c) : a = b := by
   rw [add_comm a c, add_comm b c] at h
   apply add_cancel_left c a b h
 
+-- Sum of Naturals Equal Zero
+-- ==========================
+
+example : ∀ (a b : ℕ) ,(h : a + b = 0) → a = 0 ∧ b = 0
+  | 0, 0, rfl => And.intro rfl rfl  -- only valid match!
+
+-- The compiler simplifies `h` to check for the `rfl` automatically.
+
+example (a b : ℕ) (h : a = 0 ∧ b = 0) : a + b = 0 := by
+  obtain ⟨ha, hb⟩ := h
+  rw [ha, hb]
+  simp
+
 @[simp]
-theorem add_eq_zero : ∀ (a b : ℕ), a + b = 0 → a = 0 ∧ b = 0
-  | 0, 0, rfl => And.intro rfl rfl
+theorem add_eq_zero {a b : ℕ} : a + b = 0 ↔ a = 0 ∧ b = 0 :=
+  Iff.intro
+    (λ _ =>
+      match a, b with
+      | 0, 0 => And.intro rfl rfl)
+    (λ ⟨ha, hb⟩ => by rw [ha, hb, add_zero])
+
+section
+  variable (x y : ℕ)
+  variable (h₁ : x + y = 0) (h₂ : x = 0 ∧ y = 0)
+
+  #check add_eq_zero.mp  h₁ |> And.left
+  #check add_eq_zero.mpr h₂
+end
 
 end ℕ

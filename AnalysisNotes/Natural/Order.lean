@@ -1,6 +1,6 @@
-import AnalysisNotes.Nat.Peano
-import AnalysisNotes.Nat.Addition
-import AnalysisNotes.Nat.Multiplication
+import AnalysisNotes.Natural.Peano
+import AnalysisNotes.Natural.Addition
+import AnalysisNotes.Natural.Multiplication
 
 
 -- Partial Order
@@ -26,7 +26,7 @@ theorem le_refl (n : ℕ) : n ≤ n := by
   rw [add_zero]
 
 @[simp]
-theorem le_trans (a b c : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
+theorem le_trans {a b c : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
   unfold le at h₁ h₂
   obtain ⟨k₁, hk₁⟩ := h₁
   obtain ⟨k₂, hk₂⟩ := h₂
@@ -36,7 +36,7 @@ theorem le_trans (a b c : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
   rw [← add_assoc]
   exact hk₂
 
-theorem le_antisymm (a b : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
+theorem le_antisymm {a b : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
   obtain ⟨k₁, hk₁⟩ := h₁
   obtain ⟨k₂, hk₂⟩ := h₂
   rw [← hk₁] at hk₂
@@ -44,7 +44,7 @@ theorem le_antisymm (a b : ℕ) (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
     apply add_cancel_left a
     rw [← add_assoc, add_zero]
     exact hk₂
-  have k_zero : k₁ = 0 := And.left (add_eq_zero k₁ k₂ h)
+  have k_zero : k₁ = 0 := add_eq_zero.mp h |> And.left
   rw [k_zero, add_zero] at hk₁
   exact hk₁
 
@@ -94,7 +94,7 @@ theorem mul_le_mul (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c) :=
     have h₂ := add_le_add (a * k) (b * k) a h₁
     have h₃ := add_le_add a b (b * k) h
     rw [add_comm, add_comm (b * k) a] at h₂
-    exact le_trans _ _ _ h₂ h₃ -- let the compiler infer a, b and c
+    exact le_trans h₂ h₃
 
 @[simp]
 theorem le_add_le (a b c d : ℕ) (h₁ : a ≤ b) (h₂ : c ≤ d) : (a + c) ≤ (b + d)
@@ -102,7 +102,7 @@ theorem le_add_le (a b c d : ℕ) (h₁ : a ≤ b) (h₂ : c ≤ d) : (a + c) �
   have l₁ := add_le_add a b c h₁
   have l₂ := add_le_add c d b h₂
   rw [add_comm, add_comm d b] at l₂
-  exact le_trans _ _ _ l₁ l₂
+  exact le_trans l₁ l₂
 
 @[simp]
 theorem le_mul_right (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c)
@@ -134,7 +134,7 @@ theorem lt_irrefl (a : ℕ) : (a < a) → False
     exact hk
   nomatch h
 
-theorem lt_trans (a b c : ℕ) (h₁ : a < b) (h₂ : b < c) : a < c := by
+theorem lt_trans {a b c : ℕ} (h₁ : a < b) (h₂ : b < c) : a < c := by
   obtain ⟨k₁, hk₁⟩ := h₁
   obtain ⟨k₂, hk₂⟩ := h₂
   rw [← hk₁] at hk₂

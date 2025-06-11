@@ -8,8 +8,8 @@
   distributivity.
 -/
 
-import AnalysisNotes.Nat.Peano
-import AnalysisNotes.Nat.Addition
+import AnalysisNotes.Natural.Peano
+import AnalysisNotes.Natural.Addition
 
 namespace ℕ
 
