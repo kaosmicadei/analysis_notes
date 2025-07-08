@@ -16,6 +16,7 @@ namespace ℕ
 -- =======================
 
 -- Addition between two natural numbers.
+@[simp]
 def add : ℕ → ℕ → ℕ
   | 0,  n => n
   | m⁺, n => (add m n)⁺
