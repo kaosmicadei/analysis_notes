@@ -1,86 +1,95 @@
 import AnalysisNotes.Natural
 
 
-structure ℤ where
-  mk :: (a b : ℕ)
-  deriving Repr
+def ℤ₀ : Type := ℕ×ℕ
 
+namespace ℤ₀
+
+@[simp] def eq (x y : ℤ₀) : Prop := x.1 + y.2 = x.2 + y.1
+
+theorem eq_refl (x : ℤ₀) : eq x x := by simp
+theorem eq_symm {x y : ℤ₀} (h : eq x y) : eq y x := by simp at *; rw [h]
+theorem eq_trans {x y z : ℤ₀} (h₁ : eq x y) (h₂ : eq y z) : eq x z := by
+  simp at *
+  apply ℕ.add_cancel_right _ _ y.1
+  -- LHS
+  rw [ℕ.add_assoc, ℕ.add_comm z.2, h₂, ← ℕ.add_assoc, ℕ.add_comm x.1]
+  -- RHS
+  rw [ℕ.add_assoc z.1 x.2, ℕ.add_comm x.2, ← h₁, ← ℕ.add_assoc]
+
+instance eq.eqv : Equivalence eq where
+  refl := eq_refl
+  symm := eq_symm
+  trans := eq_trans
+
+example (x : ℤ₀) : x = x := rfl
+
+instance intSetiod : Setoid ℤ₀ where
+  r := eq
+  iseqv := eq.eqv
+
+end ℤ₀
+
+
+def ℤ : Type := Quotient ℤ₀.intSetiod
 
 namespace ℤ
 
-def fromNat : Nat → ℤ
-  | 0 => ⟨0, 0⟩
-  | n => ⟨ℕ.fromNat n, 0⟩
+def mk (n : ℤ₀) : ℤ := Quotient.mk _ n
 
 instance (n : Nat) : OfNat ℤ n where
-  ofNat := fromNat n
+  ofNat := mk (ℕ.fromNat n, 0)
 
-#eval (2 : ℤ)
+@[simp] def neg' : ℤ₀ → ℤ := λ (a, b) => mk (b , a)
 
-def toInt : ℤ → Int := λ ⟨a, b⟩ => a.toNat - b.toNat
+theorem neg_well_defined (x y : ℤ₀) (h : x ≈ y) : neg' x = neg' y := by
+  apply Quotient.sound
+  simp [· ≈ ·, Setoid.r] at *
+  rw [h]
 
-instance : Repr ℤ where
-  reprPrec n _ := repr (toInt n)
+instance : Neg ℤ where
+  neg := Quotient.lift neg' neg_well_defined
 
-#eval ℤ.mk 0 2
-#eval ℤ.mk 0 0
-#eval ℤ.mk 3 2
+#check (1 : ℤ)
+#check (-1 : ℤ)
 
-@[simp] def neg : ℤ → ℤ := λ ⟨a, b⟩ => ⟨b, a⟩
+@[simp] def add' : ℤ₀ → ℤ₀ → ℤ := λ (a, b) (c, d) => mk (a + c, b + d)
 
-notation "⁻" x => neg x
-
-#eval ⁻0
-#eval ⁻1
-
-@[simp] def eqv : ℤ → ℤ → Prop := λ ⟨a, b⟩ ⟨c, d⟩ => a + d = b + c
-
-notation x " ∼ " y => eqv x y
-
-@[simp] theorem eqv_refl (x : ℤ) : x ∼ x := by simp
-@[simp] theorem eqv_symm {x y : ℤ} (h : x ∼ y) : y ∼ x := by simp at *; rw [h]
-@[simp] theorem eqv_trans {x y z : ℤ} (h₁ : x ∼ y) (h₂ : y ∼ z) : x ∼ z := by
-  simp at *
-  apply ℕ.add_cancel_right _ _ y.a
+theorem add_well_defined (a b c d : ℤ₀) (h₁ : a ≈ c) (h₂ : b ≈ d) :
+  add' a b = add' c d
+  := by
+  apply Quotient.sound
+  simp [· ≈ ·, Setoid.r] at *
   -- LHS
-  rw [ℕ.add_assoc, ℕ.add_comm z.b, h₂, ← ℕ.add_assoc, ℕ.add_comm x.a]
+  rw [← ℕ.add_assoc b.1, ℕ.add_comm b.1, ℕ.add_assoc c.2, ← ℕ.add_assoc a.1, h₁, h₂, ← ℕ.add_assoc]
   -- RHS
-  rw [ℕ.add_assoc z.a x.b, ℕ.add_comm x.b, ← h₁, ← ℕ.add_assoc]
+  rw [← ℕ.add_assoc d.1, ← ℕ.add_assoc, ℕ.add_comm d.1, ← ℕ.add_assoc]
 
-instance : DecidableRel eqv :=
-  λ ⟨a, b⟩ ⟨c, d⟩ => inferInstanceAs (Decidable (a + d = b + c))
-
-#eval 0 ∼ ⁻0
-#eval (1 ∼ ⁻1) -> False
-
-@[simp] def add : ℤ → ℤ → ℤ := λ ⟨a, b⟩ ⟨c, d⟩ => ⟨a + c, b + d⟩
+@[simp] def add : ℤ → ℤ → ℤ := Quotient.lift₂ add' add_well_defined
 
 instance : Add ℤ where
   add := add
 
-#eval (2 : ℤ) + 3
-#eval (2 : ℤ) + ⁻3
-
-@[simp] def sub (x y : ℤ) : ℤ := x + ⁻y
+#check (1 : ℤ) + 1
+#check (1 : ℤ) + (-1)
 
 instance : Sub ℤ where
-  sub := sub
+  sub := λ a b => a + (-b)
 
-#eval ((1 : ℤ) - 1) ∼ 0
+#check (1 : ℤ) - 1
 
-@[simp] def mul : ℤ → ℤ → ℤ := λ ⟨a, b⟩ ⟨c, d⟩ => ⟨a * d, b * c⟩
+@[simp]
+theorem add_inv_eq_zero (n : ℤ) : n + (-n) = 0 := by
+  cases n using Quotient.ind
+  apply Quotient.sound
+  simp [· ≈ ·, Setoid.r, ℕ.zero_eq_nat_zero]
 
-instance : Mul ℤ where
-  mul := mul
+theorem add_zero (n : ℤ) : n + 0 = n := by
+  cases n using Quotient.ind
+  simp [add]
+  sorry
 
-#check (⁻3) * 2
-#eval  (⁻3) * 2
-
-instance intSetoid : Setoid ℤ where
-  r := eqv
-  iseqv := ⟨eqv_refl, eqv_symm, eqv_trans⟩
+example (a b c d : ℤ) (h : a + c = b + d) : a - b = c - d := by
+  sorry
 
 end ℤ
-
-
--- def ℤ₁ := Quotient ℤ.intSetoid
