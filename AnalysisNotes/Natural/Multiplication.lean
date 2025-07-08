@@ -17,6 +17,7 @@ namespace ℕ
 -- =======================
 
 -- Multiplication between two natural numbers.
+@[simp]
 def mul : ℕ → ℕ → ℕ
   | 0, _ => 0
   | m⁺, n => n + (mul m n)
