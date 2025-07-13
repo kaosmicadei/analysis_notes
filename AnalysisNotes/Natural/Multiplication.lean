@@ -22,7 +22,7 @@ def mul : ℕ → ℕ → ℕ
   | 0, _ => 0
   | m⁺, n => n + (mul m n)
 
--- This instance allows using `+` with ℕ.
+-- This instance allows using `*` with ℕ.
 instance : Mul ℕ where
   mul := mul
 

@@ -140,6 +140,9 @@ section
   #check succ_inj.mpr h₂
 end
 
+-- Equality Transitivity
+-- =====================
+
 theorem eq_trans(a b c : ℕ) (h₁ : a = b) (h₂ : b = c) : a = c := by
   rw [h₁]
   exact h₂

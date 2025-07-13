@@ -20,7 +20,7 @@ theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
   rw [zero_add]
 
 @[simp]
-theorem le_refl (n : ℕ) : n ≤ n := by
+theorem le_refl (n : ℕ) : n ≤ n := by  -- := ⟨0, by simp⟩
   unfold le
   apply Exists.intro 0
   rw [add_zero]
