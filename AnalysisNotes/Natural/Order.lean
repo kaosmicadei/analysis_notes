@@ -52,15 +52,15 @@ notation m " ≤ " n => le m n
 theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
   := by
   unfold le
-  -- Expands the definition of the function `le` exposing the quantified
+  -- ^ Expands the definition of the function `le` exposing the quantified
   -- variable, ∃ k, 0 + k = n.
 
   apply Exists.intro n
-  -- Replace the quantified variable with the introduced value.
+  -- ^ Replace the quantified variable with the introduced value.
   -- ∃ k, 0 + k = n -> 0 + n = n.
 
   rw [zero_add]
-  -- Addition reduction.
+  -- ^ Addition reduction.
 
 
 -- Partial Order Relations
@@ -81,13 +81,13 @@ theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
 @[simp]
 theorem le_refl (n : ℕ) : n ≤ n := by  -- := ⟨0, by simp⟩
   unfold le
-  -- Expands to ∃k, n + k = n.
+  -- ^ Expands to ∃k, n + k = n.
 
   apply Exists.intro 0
-  -- Replaces k turning ∃k, n + k = n into n + 0 = n
+  -- ^ Replaces k turning ∃k, n + k = n into n + 0 = n
 
   rw [add_zero]
-  -- Addition reduction.
+  -- ^ Addition reduction.
 
 -- Antisymmetry
 -- ------------
@@ -105,13 +105,13 @@ theorem le_refl (n : ℕ) : n ≤ n := by  -- := ⟨0, by simp⟩
 -- nested cases.
 theorem le_antisymm {a b : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
   obtain ⟨k₁, hk₁⟩ := h₁
-  -- Similar to Exists.intro k₁ hk₁ = h₁ in Ocaml/Haskell.
+  -- ^ Similar to Exists.intro k₁ hk₁ = h₁ in Ocaml/Haskell.
 
   obtain ⟨k₂, hk₂⟩ := h₂
-  -- Exists.intro k₂ hk₂ = h₂.
+  -- ^ Exists.intro k₂ hk₂ = h₂.
 
   rw [← hk₁] at hk₂
-  -- Merging hypotesis.
+  -- ^ Merging hypotesis.
 
   -- The key element here is to prove that k₁+k₂=0.
   have sum_is_zero : k₁ + k₂ = 0 := by
@@ -123,23 +123,48 @@ theorem le_antisymm {a b : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
   obtain ⟨k₁_is_zero, k₂_is_zero⟩ := add_eq_zero.mp sum_is_zero
 
   rw [k₁_is_zero, add_zero] at hk₁
-  -- Addition reduction.
+  -- ^ Addition reduction.
 
   exact hk₁  -- QED
 
 
 -- Transitivity
 -- ------------
+--
+-- In simple terms, `a ≤ b ∧ b ≤ c → a ≤ c` means, `∃k₁, a + k₁ = b` and
+-- `∃k₂, b + k₂ = c` that leads to `∃k₁ k₂, a + k₁ + k₂ = c`.
+--
+-- Here will need to combine construction and destruction of `Exists` type. We
+-- use destruction to access the quantified variables and the construction to
+-- construct the final proof.
 @[simp]
 theorem le_trans {a b c : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
-  unfold le at h₁ h₂
   obtain ⟨k₁, hk₁⟩ := h₁
+  -- ^ Exists.intro k₁ hk₁ = h₁.
+
   obtain ⟨k₂, hk₂⟩ := h₂
+  -- ^ Exists.intro k₂ hk₂ = h₂.
+
   rw [← hk₁] at hk₂
+  -- ^ Merge hypotesis.
+
   unfold le
+  -- ^ Hypotesis, ∃k, a + k = c.
+
   apply Exists.intro (k₁ + k₂)
+  -- ^ Replace k=k₁+k₂
+
   rw [← add_assoc]
-  exact hk₂
+  -- ^ Addition reduction.
+
+  exact hk₂  -- QED
+
+
+-- Inequalities With Sucessor
+-- ==========================
+
+-- To prove inequalities involving addition, first we need proofs relative to
+-- the successor. This is done in the following proofs.
 
 @[simp]
 theorem le_self_succ (n : ℕ) : n ≤ n⁺ := by
@@ -149,7 +174,6 @@ theorem le_self_succ (n : ℕ) : n ≤ n⁺ := by
 
 @[simp]
 theorem le_succ (m n : ℕ) (h : m ≤ n) : m ≤ n⁺ := by
-  unfold le at h
   obtain ⟨k, hk⟩ := h
   unfold le
   apply Exists.intro (k⁺)
@@ -157,11 +181,14 @@ theorem le_succ (m n : ℕ) (h : m ≤ n) : m ≤ n⁺ := by
 
 @[simp]
 theorem succ_le_succ (m n : ℕ) (h : m ≤ n) : m⁺ ≤ n⁺ := by
-  unfold le at h
   obtain ⟨k, hk⟩ := h
   unfold le
   apply Exists.intro k
   rw [succ_add, hk]
+
+
+-- Addition Inequalities
+-- =====================
 
 @[simp]
 theorem add_le_add (a b c : ℕ) (h : a ≤ b) : (a + c) ≤ (b + c) :=
@@ -175,20 +202,34 @@ theorem add_le_add (a b c : ℕ) (h : a ≤ b) : (a + c) ≤ (b + c) :=
     exact add_le_add a b k h
 
 
+-- Multiplication Inequalities
+-- ===========================
 
-theorem mul_le_mul (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c) :=
+@[simp]
+theorem mul_le_mul_right (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c) :=
   match c with
   | 0 => by
     repeat rw [mul_zero]
     exact le_refl 0
   | k⁺ => by
     repeat rw [mul_succ]
-    have h₁ : (a * k) ≤ (b * k) := mul_le_mul a b k h
+    have h₁ : (a * k) ≤ (b * k) := mul_le_mul_right a b k h
     have h₂ := add_le_add (a * k) (b * k) a h₁
     have h₃ := add_le_add a b (b * k) h
     rw [add_comm, add_comm (b * k) a] at h₂
     exact le_trans h₂ h₃
 
+@[simp]
+theorem mul_le_mul_left (a b c : ℕ) (h : a ≤ b) : (c * a) ≤ (c * b)
+  := by
+  rw [mul_comm c, mul_comm c]
+  exact mul_le_mul_right a b c h
+
+
+-- Algebraic Properties of Inequalities
+-- ====================================
+
+-- Addition between two inequalities.
 @[simp]
 theorem le_add_le (a b c d : ℕ) (h₁ : a ≤ b) (h₂ : c ≤ d) : (a + c) ≤ (b + d)
   := by
@@ -196,16 +237,6 @@ theorem le_add_le (a b c d : ℕ) (h₁ : a ≤ b) (h₂ : c ≤ d) : (a + c) �
   have l₂ := add_le_add c d b h₂
   rw [add_comm, add_comm d b] at l₂
   exact le_trans l₁ l₂
-
-@[simp]
-theorem le_mul_right (a b c : ℕ) (h : a ≤ b) : (a * c) ≤ (b * c)
-  := mul_le_mul a b c h
-
-@[simp]
-theorem le_mul_left (a b c : ℕ) (h : a ≤ b) : (c * a) ≤ (c * b)
-  := by
-  rw [mul_comm, mul_comm c]
-  exact mul_le_mul a b c h
 
 end ℕ
 
@@ -215,9 +246,15 @@ end ℕ
 
 namespace ℕ
 
+-- Definitions & Notations
+-- =======================
+
 def lt (m n : ℕ) : Prop := ∃ k, m + k⁺ = n
 
 notation m " < " n => lt m n
+
+-- Strict Partial Order Is *Not* Reflexive
+-- =======================================
 
 theorem lt_irrefl (a : ℕ) : (a < a) → False
   := λ ⟨k, hk⟩ => by
@@ -226,6 +263,10 @@ theorem lt_irrefl (a : ℕ) : (a < a) → False
     rw [add_zero]
     exact hk
   nomatch h
+
+
+-- Strict Partial Order Transitivity
+-- =================================
 
 theorem lt_trans {a b c : ℕ} (h₁ : a < b) (h₂ : b < c) : a < c := by
   obtain ⟨k₁, hk₁⟩ := h₁
