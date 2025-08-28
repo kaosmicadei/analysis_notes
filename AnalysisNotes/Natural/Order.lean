@@ -1,3 +1,13 @@
+/-
+  Order of Natural Numbers
+  ========================
+
+  This files defines the partial and strict order for nthe natural numbers
+  introduced in `Peano.lean`. It includes the core definition, basic notation,
+  and proves fundamental relations of transivity, symmetry, and inequality
+  relations involving addition and multiplication.
+-/
+
 import AnalysisNotes.Natural.Peano
 import AnalysisNotes.Natural.Addition
 import AnalysisNotes.Natural.Multiplication
@@ -8,23 +18,118 @@ import AnalysisNotes.Natural.Multiplication
 
 namespace ℕ
 
+-- Definitions & Notations
+-- =======================
+
+-- Partial order between natural numbers.
+-- --------------------------------------
+--
+-- Although an inductive definition like
+--
+--     inductive LTE : ℕ -> ℕ -> Prop where
+--       | LTEZero {n : ℕ} : LTE 0 n
+--       | LTESucc {m n : ℕ} : LTE m n -> LTE m.succ n.succ
+--
+-- would be great for type proofs, for pratical purposes, the classical
+-- definition operational definition is more practical for "numerical" proofs.
+-- So, for now, this file will cover only the operational definition
+
+-- Operational definition of partial order.
 def le (m n : ℕ) : Prop := ∃ k, m + k = n
 
+-- Making `m ≤ n` as a shortcut for `le m n` makes type notations easier to read.
 notation m " ≤ " n => le m n
 
+-- Zero: The Smallest Natural
+-- ==========================
+--
+-- Since the definition of `le` uses `Exists` structure and addition, we could
+-- opt to use the struct constructor and the automatic simplitication rules
+-- written in `Addition.lean` to construct the prove. But, because of the
+-- pedagogical goal of this collection, we proceed with a more manual/laborous
+-- demonstration in order to identify all the steps of the proof.
 @[simp]
 theorem zero_le (n : ℕ) : 0 ≤ n  -- := ⟨n, by simp⟩
   := by
   unfold le
-  apply Exists.intro n
-  rw [zero_add]
+  -- Expands the definition of the function `le` exposing the quantified
+  -- variable, ∃ k, 0 + k = n.
 
+  apply Exists.intro n
+  -- Replace the quantified variable with the introduced value.
+  -- ∃ k, 0 + k = n -> 0 + n = n.
+
+  rw [zero_add]
+  -- Addition reduction.
+
+
+-- Partial Order Relations
+-- =========================
+--
+-- To be called "partially ordered", the inequality needs to hold three
+-- properties:
+-- 1. Reflexivity, n ≤ n.
+-- 2. Antisymmetry, m ≤ n ∧ n ≤ m → m = n.
+-- 3. Transitivity, a ≤ b ∧ b ≤ c → a ≤ c.
+
+-- Relfexivity
+-- -----------
+--
+-- From the definition, n ≤ n = ∃k, n + k = n. The trivial solution is k=0.
+-- As before, we will prove this theorem step by step instead of using the
+-- `Exists` constructor.
 @[simp]
 theorem le_refl (n : ℕ) : n ≤ n := by  -- := ⟨0, by simp⟩
   unfold le
-  apply Exists.intro 0
-  rw [add_zero]
+  -- Expands to ∃k, n + k = n.
 
+  apply Exists.intro 0
+  -- Replaces k turning ∃k, n + k = n into n + 0 = n
+
+  rw [add_zero]
+  -- Addition reduction.
+
+-- Antisymmetry
+-- ------------
+--
+-- To prove the antisymmetry property we start from two hypotesis: `a ≤ b` and
+-- `b ≤ a`. The first unfolds as `∃k₁, a + k₁ = b` while the second expands to
+-- `∃k₂, b + k₂ = a`.
+--
+-- The proof requires to use the first hypotesis on the second (or vice-versa)
+-- and then prove that `k₁+k₂=0`. `Exists.intro` can only construct existential
+-- proofs. To deconstruct we nee to use `cases h with` or `obtain ⟨_⟩ := h`
+--
+-- To deconstruct a single variable, both work fine. For more variables, it's
+-- deconstruct them using `obtain` since `cases` would lead to less readable
+-- nested cases.
+theorem le_antisymm {a b : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
+  obtain ⟨k₁, hk₁⟩ := h₁
+  -- Similar to Exists.intro k₁ hk₁ = h₁ in Ocaml/Haskell.
+
+  obtain ⟨k₂, hk₂⟩ := h₂
+  -- Exists.intro k₂ hk₂ = h₂.
+
+  rw [← hk₁] at hk₂
+  -- Merging hypotesis.
+
+  -- The key element here is to prove that k₁+k₂=0.
+  have sum_is_zero : k₁ + k₂ = 0 := by
+    apply add_cancel_left a
+    rw [← add_assoc, add_zero]
+    exact hk₂
+
+  -- Over naturals, the only way a sum is zero is if each summand is zero.
+  obtain ⟨k₁_is_zero, k₂_is_zero⟩ := add_eq_zero.mp sum_is_zero
+
+  rw [k₁_is_zero, add_zero] at hk₁
+  -- Addition reduction.
+
+  exact hk₁  -- QED
+
+
+-- Transitivity
+-- ------------
 @[simp]
 theorem le_trans {a b c : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
   unfold le at h₁ h₂
@@ -35,18 +140,6 @@ theorem le_trans {a b c : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c := by
   apply Exists.intro (k₁ + k₂)
   rw [← add_assoc]
   exact hk₂
-
-theorem le_antisymm {a b : ℕ} (h₁ : a ≤ b) (h₂ : b ≤ a) : a = b := by
-  obtain ⟨k₁, hk₁⟩ := h₁
-  obtain ⟨k₂, hk₂⟩ := h₂
-  rw [← hk₁] at hk₂
-  have h : k₁ + k₂ = 0 := by
-    apply add_cancel_left a
-    rw [← add_assoc, add_zero]
-    exact hk₂
-  have k_zero : k₁ = 0 := add_eq_zero.mp h |> And.left
-  rw [k_zero, add_zero] at hk₁
-  exact hk₁
 
 @[simp]
 theorem le_self_succ (n : ℕ) : n ≤ n⁺ := by
